@@ -1,0 +1,20 @@
+{
+  "name": "3d-brimsmoke",
+  "private": true,
+  "version": "0.1.3",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "start": "vite",
+    "build": "vite build"
+  },
+  "devDependencies": {
+    "vite": "^5.2.0",
+    "vite-plugin-glsl": "^1.2.1"
+  },
+  "dependencies": {
+    "lil-gui": "^0.19.1",
+    "stats-gl": "^2.2.7",
+    "three": "^0.162.0"
+  }
+}
