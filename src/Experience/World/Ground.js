@@ -40,7 +40,7 @@ export default class Ground {
 
   setGrid() {
     this.gridHelper = new THREE.GridHelper(500, 500, "#2c2c2c", "#2c2c2c");
-    this.gridHelper.position.y = 0.002;
+    this.gridHelper.position.y = 0.02;
     this.scene.add(this.gridHelper);
   }
 
