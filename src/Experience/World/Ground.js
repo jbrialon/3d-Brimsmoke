@@ -15,6 +15,7 @@ export default class Ground {
     // Setup
     this.setMaterial();
     this.setModel();
+    this.setGrid();
 
     // Debug
     this.setDebug();
@@ -35,6 +36,12 @@ export default class Ground {
     this.mesh.receiveShadow = true;
 
     this.scene.add(this.mesh);
+  }
+
+  setGrid() {
+    this.gridHelper = new THREE.GridHelper(500, 500, "#2c2c2c", "#2c2c2c");
+    this.gridHelper.position.y = 0.002;
+    this.scene.add(this.gridHelper);
   }
 
   setDebug() {

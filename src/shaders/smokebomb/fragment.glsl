@@ -1,6 +1,7 @@
 varying vec2 vUv;
 
 uniform float uTime;
+uniform bool uInner;
 uniform float uAlpha;
 uniform float uXSpeed;
 uniform float uYSpeed;
@@ -18,6 +19,6 @@ void main() {
     float textureTwo = texture(uTextureTwo, smokeUv).r;
 
     vec3 color = uColor * textureOne;
-    float alpha = uAlpha == 1.0 ? uAlpha : textureTwo;
+    float alpha = uInner == true ? 1.0 * uAlpha : textureTwo * uAlpha;
     gl_FragColor = vec4(color, alpha);
 }

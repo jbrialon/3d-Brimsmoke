@@ -46,7 +46,7 @@ export default class Environment {
         .step(0.001);
 
       this.helper = new THREE.DirectionalLightHelper(this.sunLight, 5);
-      this.scene.add(this.helper);
+      // this.scene.add(this.helper);
     }
   }
 }

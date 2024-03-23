@@ -1,11 +1,11 @@
 import * as THREE from "three";
+import { gsap } from "gsap";
 import Experience from "../Experience";
 
-import vertexShader from "../../shaders/smokebomb/vertex.glsl";
-import fragmentShader from "../../shaders/smokebomb/fragment.glsl";
+import smokebombMaterial from "../Materials/smokebombMaterial.js";
 
 export default class Smokebomb {
-  constructor() {
+  constructor(options) {
     this.experience = new Experience();
     this.debug = this.experience.debug;
     this.scene = this.experience.scene;
@@ -23,6 +23,7 @@ export default class Smokebomb {
 
     // Options
     this.options = {
+      position: options.position,
       uColorInner: new THREE.Color(0xcd9366),
       uColorOuter: new THREE.Color(0xab734c),
     };
@@ -30,46 +31,34 @@ export default class Smokebomb {
     // Setup
     this.setMaterial();
     this.setModel();
-
+    this.setAnimation();
     // Debug
     this.setDebug();
   }
 
   setMaterial() {
-    this.innerSmokeMaterial = new THREE.ShaderMaterial({
-      uniforms: {
-        uTime: new THREE.Uniform(0),
-        uAlpha: new THREE.Uniform(1),
-        uScale: new THREE.Uniform(1),
-        uXSpeed: new THREE.Uniform(-0.2),
-        uYSpeed: new THREE.Uniform(0.1),
-        uColor: new THREE.Uniform(this.options.uColorInner),
-        uTextureOne: new THREE.Uniform(this.textureOne),
-        uTextureTwo: new THREE.Uniform(this.textureTwo),
-      },
-      vertexShader: vertexShader,
-      fragmentShader: fragmentShader,
-      depthWrite: false,
-      wireframe: false,
-      transparent: false,
+    this.innerSmokeMaterial = smokebombMaterial({
+      uTime: 0,
+      uInner: true,
+      uAlpha: 1,
+      uScale: 0.1,
+      uXSpeed: -0.2,
+      uYSpeed: 0.1,
+      uColor: this.options.uColorInner,
+      uTextureOne: this.textureOne,
+      uTextureTwo: this.textureTwo,
     });
 
-    this.outerSmokeMaterial = new THREE.ShaderMaterial({
-      uniforms: {
-        uTime: new THREE.Uniform(0),
-        uAlpha: new THREE.Uniform(0),
-        uScale: new THREE.Uniform(1),
-        uXSpeed: new THREE.Uniform(-0.3),
-        uYSpeed: new THREE.Uniform(0.2),
-        uColor: new THREE.Uniform(this.options.uColorOuter),
-        uTextureOne: new THREE.Uniform(this.textureOne),
-        uTextureTwo: new THREE.Uniform(this.textureTwo),
-      },
-      vertexShader: vertexShader,
-      fragmentShader: fragmentShader,
-      depthWrite: false,
-      wireframe: false,
-      transparent: true,
+    this.outerSmokeMaterial = smokebombMaterial({
+      uTime: 0,
+      uInner: false,
+      uAlpha: 1,
+      uScale: 0.1,
+      uXSpeed: -0.3,
+      uYSpeed: 0.2,
+      uColor: this.options.uColorOuter,
+      uTextureOne: this.textureOne,
+      uTextureTwo: this.textureTwo,
     });
   }
 
@@ -84,13 +73,125 @@ export default class Smokebomb {
     this.outerSmoke = new THREE.Mesh(this.outerSphere, this.outerSmokeMaterial);
     this.smoke.add(this.outerSmoke);
 
-    this.smoke.scale.set(5, 5, 5);
+    // this.smoke.scale.set(5, 5, 5);
+    this.smoke.scale.set(0, 0, 0);
+    this.smoke.position.set(
+      this.options.position.x,
+      this.options.position.y,
+      this.options.position.z
+    );
     this.scene.add(this.smoke);
   }
 
+  setAnimation() {
+    this.tl = gsap.timeline({ delay: Math.random() * 2, repeat: -1 });
+    this.tl
+      .addLabel("launch")
+      .to(
+        this.smoke.scale,
+        {
+          x: 5,
+          y: 5,
+          z: 5,
+          duration: 1.25,
+          // ease: "power3.in",
+        },
+        "launch"
+      )
+      .to(
+        this.outerSmokeMaterial.uniforms.uScale,
+        {
+          value: 1,
+          duration: 1.25,
+          // ease: "power3.in",
+        },
+        "launch"
+      )
+      .to(
+        this.innerSmokeMaterial.uniforms.uScale,
+        {
+          value: 1,
+          duration: 1.25,
+          // ease: "power3.in",
+        },
+        "launch"
+      );
+
+    // Second Step: "fade"
+    // Adding the label "fade" at the start of these animations
+    // You can control the start time of "fade" relative to "launch" by adjusting the position parameter
+    // For example, to start "fade" immediately after "launch", you can use "+=0" as the position parameter
+    this.tl
+      .addLabel("fade", `+=${4 + Math.random() * 6}`)
+      .to(
+        this.outerSmokeMaterial.uniforms.uAlpha,
+        {
+          value: 0,
+          duration: 2,
+          // ease: "power3.in",
+        },
+        "fade"
+      )
+      .to(
+        this.innerSmokeMaterial.uniforms.uAlpha,
+        {
+          value: 0,
+          duration: 2,
+          // ease: "power3.in",
+        },
+        "fade"
+      );
+  }
   setDebug() {
     if (this.debug.active) {
       this.debugFolder = this.debug.ui.addFolder("Smoke");
+      this.debugFolder
+        .add(
+          {
+            button: () => {
+              gsap.to(this.smoke.scale, {
+                x: 5,
+                y: 5,
+                z: 5,
+                duration: 1.25,
+                // ease: "power3.in",
+              });
+              gsap.to(this.outerSmokeMaterial.uniforms.uScale, {
+                value: 1,
+                duration: 1.25,
+                // ease: "power3.in",
+              });
+              gsap.to(this.innerSmokeMaterial.uniforms.uScale, {
+                value: 1,
+                duration: 1.25,
+                // ease: "power3.in",
+              });
+            },
+          },
+          "button"
+        )
+        .name("launch");
+
+      this.debugFolder
+        .add(
+          {
+            button: () => {
+              gsap.to(this.outerSmokeMaterial.uniforms.uAlpha, {
+                value: 0,
+                duration: 2,
+                // ease: "power3.in",
+              });
+              gsap.to(this.innerSmokeMaterial.uniforms.uAlpha, {
+                value: 0,
+                duration: 2,
+                // ease: "power3.in",
+              });
+            },
+          },
+          "button"
+        )
+        .name("fade");
+
       this.debugFolder
         .addColor(this.options, "uColorInner")
         .name("inner Smoke color")
